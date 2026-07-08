@@ -18,21 +18,38 @@ system_prompt = {
     ),
 }
 
-user_prompt = {
-    "role": "user",
-    "content": "Bhava divas jaam bakwas gela ajacha"
-}
-
 
 def main():
-    print("Hello from Apala Bhidu!")
+    print("Hello from Apala Bhidu! (type 'exit' or 'quit' to leave)")
 
-    response = client.chat.completions.create(
-        model="gpt-5-nano",
-        messages=[system_prompt, user_prompt],
-    )
+    messages = [system_prompt]
 
-    print(response.choices[0].message.content)
+    while True:
+        try:
+            user_input = input("\nYou: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nApala Bhidu: Chal bhidu, bhetu punha! 👋")
+            break
+
+        if not user_input:
+            continue
+
+        if user_input.lower() in {"exit", "quit"}:
+            print("Apala Bhidu: Chal bhidu, bhetu punha! 👋")
+            break
+
+        messages.append({"role": "user", "content": user_input})
+
+        response = client.chat.completions.create(
+            # model="gpt-5-nano",
+            model="gpt-4.1-nano",
+            messages=messages,
+        )
+
+        reply = response.choices[0].message.content
+        print(f"\nApala Bhidu: {reply}")
+
+        messages.append({"role": "assistant", "content": reply})
 
 
 if __name__ == "__main__":

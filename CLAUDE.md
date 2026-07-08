@@ -30,4 +30,4 @@ OPENAI_API_KEY=<key>
 ## Notes
 
 - The model is hardcoded to `gpt-5-nano` in the `client.chat.completions.create(...)` call.
-- The user message is currently hardcoded (`user_prompt`); there is no interactive input loop yet.
+- `main()` runs an interactive REPL loop: it reads user input, appends each turn to a `messages` list (so the full conversation history is sent on every request for context), and exits on `exit`/`quit`, EOF, or Ctrl-C.
