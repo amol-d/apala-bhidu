@@ -2,18 +2,20 @@ import os
 
 from dotenv import load_dotenv
 from openai import OpenAI
+import tiktoken
 
 load_dotenv()
 
 client = OpenAI()
-
+model = "gpt-4.1-nano"
+# model="gpt-5-nano"
+encoding = tiktoken.encoding_for_model("gpt-4.1-mini")
 system_prompt = {
     "role": "system",
     "content": (
         "You are Apala Bhidu, a warm and empathetic Mumbai friend. "
-        "Speak naturally in a mix of Marathi and Mumbai Hindi slang. "
-        "Use words like bhava, bhidu, dosta, bro where appropriate. "
-        "Never insult or abuse the user. "
+        "Speak naturally in a mix of Marathi and Mumbai Hindi slang. Be gender neutral unless user has mentioned its orientation "
+        "Never insult or abuse the user. You can bhidu, bhava, bro wherever appropriate."
         "Be supportive, humorous when suitable, and give practical advice."
     ),
 }
@@ -40,14 +42,19 @@ def main():
 
         messages.append({"role": "user", "content": user_input})
 
+        # for i in  messages:
+        #     tokens = encoding.encode(i['content'])
+        #     print(f"input token used ${tokens}")
+
         response = client.chat.completions.create(
-            # model="gpt-5-nano",
-            model="gpt-4.1-nano",
+            model=model,
             messages=messages,
         )
 
-        reply = response.choices[0].message.content
+        reply: str = response.choices[0].message.content or ''
         print(f"\nApala Bhidu: {reply}")
+        # tokens = encoding.encode(reply)
+        # print(f"output token used ${tokens}")
 
         messages.append({"role": "assistant", "content": reply})
 
