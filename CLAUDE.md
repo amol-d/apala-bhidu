@@ -4,7 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-`apala-bhidu` is a small OpenAI chat script that plays "Apala Bhidu" — a warm Mumbai friend persona that replies in a mix of Marathi and Mumbai Hindi slang. The persona is defined by the `system_prompt` in [main.py](main.py). All logic currently lives in that single file's `main()`.
+`apala-bhidu` is an OpenAI chat application that plays "Apala Bhidu" — a warm Mumbai friend persona that replies in a mix of Marathi and Mumbai Hindi slang. The persona is defined by `SYSTEM_PROMPT` in [main.py](main.py).
+
+There are two front-ends over the same chat logic:
+
+- [main.py](main.py) — the reusable chat logic plus a terminal REPL (`main()`).
+- [app.py](app.py) — a Gradio `ChatInterface` web UI that calls `chat_fn` from `main.py`.
 
 ## Tooling
 
@@ -12,10 +17,16 @@ The project is managed with **uv** (see [uv.lock](uv.lock)) and targets **Python
 
 ```bash
 uv sync            # install/resolve dependencies from pyproject.toml + uv.lock
-uv run main.py     # run the script (loads .env, calls the OpenAI API)
+uv run main.py     # run the terminal REPL (loads .env, calls the OpenAI API)
+uv run app.py      # launch the Gradio web chat UI (prints a local URL)
+uv run pytest      # run the unit tests in tests/
 ```
 
-There are no tests, linters configured to run, or build step. `isort` is a declared dependency but is not wired into any command.
+`pytest` is declared in the `dev` dependency group and configured under
+`[tool.pytest.ini_options]` (adds the repo root to `pythonpath`, tests live in
+`tests/`). The tests use a fake OpenAI client, so they need no API key or
+network access. No linters are wired into any command; `isort` is a declared
+dependency but is not run automatically.
 
 ## Configuration
 
@@ -29,5 +40,11 @@ OPENAI_API_KEY=<key>
 
 ## Notes
 
-- The model is hardcoded to `gpt-5-nano` in the `client.chat.completions.create(...)` call.
+- The model is set once via the module-level `MODEL` constant in [main.py](main.py) (currently `gpt-4.1-nano`).
+- The OpenAI client is created lazily via `get_client()` so importing `main` (e.g. from tests) does not require an API key.
+- Chat logic in `main.py` is split into small, testable functions:
+  - `history_to_messages(history)` — turns a Gradio `messages`-format history into an OpenAI messages list, prepending `SYSTEM_PROMPT`.
+  - `generate_reply(messages, client=None)` — calls the API and returns the reply text.
+  - `chat_fn(message, history, client=None)` — the Gradio `ChatInterface` callback; also the seam tests inject a fake client through.
 - `main()` runs an interactive REPL loop: it reads user input, appends each turn to a `messages` list (so the full conversation history is sent on every request for context), and exits on `exit`/`quit`, EOF, or Ctrl-C.
+- `app.py` targets **Gradio 6** (messages format is the default; the `type="messages"` argument was removed).
