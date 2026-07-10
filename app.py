@@ -20,7 +20,7 @@ CHATBOT = gr.Chatbot(
 demo = gr.ChatInterface(
     fn=chat_fn,
     chatbot=CHATBOT,
-    title="Apala Bhidu 🫂",
+    title="Apala Bhidu 👨‍💼",
     description=(
         "Tumcha Mumbai wala dost. Bindhaast bol — Marathi, Hindi, English, "
         "kahi bhi chalega."
